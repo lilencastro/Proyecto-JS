@@ -67,7 +67,7 @@ function buscarPosicionProducto(nombreProducto){
     }
 }
 
-function calcularMontoFinal(){
+const calcularMontoFinal = () => {
     let monto = 0;
     for(item of pedidoCarrito){
         monto += item.precioTotal; 
