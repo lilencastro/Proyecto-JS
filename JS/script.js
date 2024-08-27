@@ -1,17 +1,19 @@
 // CLASES
 class Productos {
-    constructor(id, title, price) {
-        this.id = id;
-        this.title = title;
+    static id = 0;
+
+    constructor(descripcion, price) {
+        this.id = ++Productos.id;
+        this.descripcion = descripcion;
         this.price = price;
     }
+
 
 }
 let listaProductos = [];
 
 class itemPedido {
-    constructor(idProducto, nombre, cantidad, precioUnitario){
-        this.idProducto = idProducto;
+    constructor(nombre, cantidad, precioUnitario){
         this.nombre = nombre;
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
@@ -20,34 +22,23 @@ class itemPedido {
 }
 let pedidoCarrito = [];
 
-
 // Carga de productos
-listaProductos.push(new Productos(0, "Banana", 2500));
-listaProductos.push(new Productos (1, "Manzana", 3000));
-listaProductos.push(new Productos (2, "Pera", 1400));
-listaProductos.push(new Productos (3, "Papa", 1200));
-listaProductos.push(new Productos (4, "Berenjena", 1500));
-listaProductos.push(new Productos (5, "Naranja", 1600));
-listaProductos.push(new Productos (6, "Calabaza", 2400));
-listaProductos.push(new Productos (7, "Brocoli", 2300));
-listaProductos.push(new Productos (8, "Frutilla", 3400));
-listaProductos.push(new Productos (9, "Kiwi", 2700));
+listaProductos.push(new Productos("Remera", 2500));
+listaProductos.push(new Productos ("Bicicleta", 3000));
+listaProductos.push(new Productos ("Buzo", 1400));
+listaProductos.push(new Productos ("Gorra", 1200));
+listaProductos.push(new Productos ("Comando", 1500));
+listaProductos.push(new Productos ("Pantalon", 1600));
 
+listaProductos.forEach((producto) => {
+    let descripcion = document.getElementById(`description-product-${producto.id}`);
+    let price = document.getElementById(`price-product-${producto.id}`);
+    descripcion.innerHTML = producto.descripcion;
+    price.innerHTML = "$ " + producto.price;
+})
 
 
 // FUNCIONES
-
-function ingresoPedido(){
-    let pedido = -1;
-    let input = prompt("Ingrese el número de producto que desea:\n1. Banana     $2500\n2. Manzana    $3000\n3. Pera       $1400\n4. Papa       $1200\n5. Berenjena  $1500\n6. Naranja    $1600\n7. Calabaza   $2400\n8. Brocoli    $2300\n9. Frutilla   $3400\n10. Kiwi  $2700\n\nIngrese 0 (cero) para finalizar el pedido.")
-    if(parseInt(input) != null){
-        pedido = parseInt(input);
-    } else {
-        alert("Debe ingresar un numero.");
-    }
-    return pedido;
-}
-
 function verificarExistencia(nombreProducto){
     let existe = false;
     for(producto of pedidoCarrito){
@@ -57,7 +48,6 @@ function verificarExistencia(nombreProducto){
     }
     return existe;
 }
-
 function buscarPosicionProducto(nombreProducto){
     let pos = -1;
     for(item in pedidoCarrito){
@@ -66,48 +56,48 @@ function buscarPosicionProducto(nombreProducto){
         }
     }
 }
-
-const calcularMontoFinal = () => {
-    let monto = 0;
-    for(item of pedidoCarrito){
-        monto += item.precioTotal; 
-    }
-    return monto;
+function findProductInCart(producto){
+    return pedidoCarrito.find((pedidoCarrito) => pedidoCarrito.nombre === producto);
 }
 
 
 
-// Ingreso de producto por el usuario
-let pedido = ingresoPedido();
+// Botones agregar
+let totalPedido = 0;
+let buttons = document.querySelectorAll('.add-to-cart-btn');
+buttons.forEach(function(button) {
+    button.addEventListener('click', function() {
+        let idProduct = this.getAttribute('data-product-name');
 
-// Carga del producto en el carrito
-while(pedido != 0){
-    if(pedido > 0 && pedido <= 10){
-        if(verificarExistencia(listaProductos[pedido-1].title)){
-            let pos = buscarPosicionProducto(listaProductos[pedido-1].title);
+        let cartItems = document.getElementById('cart-items');
+        
+        
+        if(verificarExistencia(listaProductos[idProduct-1].descripcion)){
+            let pos = buscarPosicionProducto(listaProductos[idProduct - 1].descripcion);
             pedidoCarrito[pos].cantidad++;
             pedidoCarrito[pos].precioTotal = pedidoCarrito[pos].cantidad * pedidoCarrito[pos].precioUnitario;
+        } else {
+            pedidoCarrito.push(new itemPedido(listaProductos[idProduct - 1].descripcion, 1, listaProductos[idProduct - 1].price));
         }
-        else {
-            pedidoCarrito.push(new itemPedido((pedido-1), listaProductos[pedido - 1].title, 1, (listaProductos[pedido-1].price)))
-        }    
-    } else if(pedido == 0){
-        break;
-    } 
-    else {
-        alert("Ingrese un numero de producto correcto.");
-    }
-    pedido = ingresoPedido();
-}
-alert("Carga de pedido finalizada, presione Aceptar para ver el detalle del pedido. ")
+        
+        let item = findProductInCart(listaProductos[idProduct - 1].descripcion);
+        let newItem = document.createElement('li');
+        newItem.textContent = `${item.nombre}
+            $ ${item.precioTotal}`;
+        cartItems.appendChild(newItem);
+
+        let sidebar = document.getElementById('sidebar');
+        sidebar.classList.add('open');
+
+        setTimeout(function() {
+            sidebar.classList.remove('open');
+        }, 3000);
+
+        totalPedido = totalPedido + item.precioUnitario;
+        let totalPrice = document.getElementById("total-price");
+        totalPrice.textContent = `Total:    $${totalPedido}`;
+    });
+});
 
 
-// Visualizacion del pedido
-for(let i=0; i < pedidoCarrito.length; i++){
-    document.write(`
-    Producto: ${pedidoCarrito[i].nombre} <br>
-    Cantidad: ${pedidoCarrito[i].cantidad}\n <br>
-    Precio: $${pedidoCarrito[i].precioTotal} <br>
-    <br><br>`);
-}
-document.write(`Precio total: $${calcularMontoFinal()}`)
+
